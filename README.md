@@ -32,12 +32,4 @@ This project reimagines the classic 9×9 puzzle with smooth animations, modern d
 
 ## 📷 Screenshots  
 
-*(Add some screenshots or GIFs of your Sudoku game UI here)*  
-
----
-
-## 📌 How to Run Locally  
-
-1. Clone the repository  
-   ```bash
-   git clone https://github.com/your-username/sudoku-game.git
+<img width="1606" height="899" alt="Screenshot 2025-09-09 223451" src="https://github.com/user-attachments/assets/637e8310-7283-4873-b033-5911f5057893" />
