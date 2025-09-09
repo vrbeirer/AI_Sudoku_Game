@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Sudoku 2025 - International Sudoku Day</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0a0a0a, #1a0033, #000066);
+            min-height: 100vh;
+            color: #00ffff;
+            overflow-x: hidden;
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 2s infinite alternate;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: glowPulse 2s infinite alternate;
+        }
+        
+        .title {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease infinite;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #ff6600;
+            text-shadow: 0 0 10px rgba(255, 102, 0, 0.8);
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes glowPulse {
+            0% { filter: drop-shadow(0 0 5px rgba(0, 255, 255, 0.3)); }
+            100% { filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.8)); }
+        }
+        
+        .game-container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            padding: 3px;
+            border-radius: 15px;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.4),
+                inset 0 0 30px rgba(255, 0, 255, 0.2);
+            animation: boardGlow 4s ease-in-out infinite alternate;
+        }
+        
+        @keyframes boardGlow {
+            0% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.4), inset 0 0 30px rgba(255, 0, 255, 0.2); }
+            100% { box-shadow: 0 0 50px rgba(0, 255, 255, 0.8), inset 0 0 50px rgba(255, 0, 255, 0.4); }
+        }
+        
+        .cell {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.8);
+            border: none;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #00ffff;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+        
+        .cell:nth-child(3n):not(:nth-child(9n)) {
+            border-right: 3px solid #ff00ff;
+        }
+        
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 3px solid #ff00ff;
+        }
+        
+        .cell:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+        }
+        
+        .cell:focus {
+            outline: none;
+            background: rgba(255, 0, 255, 0.3);
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.8);
+        }
+        
+        .cell.given {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            pointer-events: none;
+        }
+        
+        .cell.correct {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            animation: correctPulse 0.5s ease;
+        }
+        
+        .cell.incorrect {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+            animation: shake 0.5s ease;
+        }
+        
+        .cell.hint {
+            background: rgba(255, 255, 0, 0.3);
+            animation: hintGlow 1s ease infinite alternate;
+        }
+        
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        @keyframes hintGlow {
+            0% { box-shadow: 0 0 10px rgba(255, 255, 0, 0.5); }
+            100% { box-shadow: 0 0 30px rgba(255, 255, 0, 1); }
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .button {
+            padding: 15px 25px;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            border: none;
+            border-radius: 25px;
+            color: #000;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .button:hover:before {
+            left: 100%;
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 255, 255, 0.4);
+        }
+        
+        .ai-assistant {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .ai-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            animation: rotate 10s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .ai-message {
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            border-left: 3px solid #00ffff;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            background: rgba(255, 0, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #ff00ff;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ff00ff;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #ccc;
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .difficulty-btn {
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #666;
+            border-radius: 20px;
+            color: #ccc;
+            font-family: 'Orbitron', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .difficulty-btn.active {
+            border-color: #00ffff;
+            color: #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+            }
+            
+            .cell {
+                width: 35px;
+                height: 35px;
+                font-size: 1.2rem;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 class="title">AI SUDOKU 2025</h1>
+            <p class="subtitle">🧩 International Sudoku Day Edition 🤖</p>
+        </div>
+        
+        <div class="game-container">
+            <div>
+                <div class="difficulty-selector">
+                    <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
+                    <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+                    <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+                </div>
+                <div class="sudoku-board" id="board"></div>
+            </div>
+            
+            <div class="controls">
+                <div class="ai-assistant">
+                    <div class="ai-avatar">🤖</div>
+                    <div class="ai-message" id="ai-message">
+                        Welcome to AI Sudoku 2025! I'm your digital assistant. Select a difficulty and start playing. I'll provide hints and encouragement along the way!
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value" id="time">00:00</div>
+                            <div class="stat-label">Time</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="hints">0</div>
+                            <div class="stat-label">Hints Used</div>
+                        </div>
+                    </div>
+                    
+                    <button class="button" id="new-game">New Game</button>
+                    <button class="button" id="hint-btn">AI Hint</button>
+                    <button class="button" id="solve-btn">Auto Solve</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        class FuturisticSudoku {
+            constructor() {
+                this.board = [];
+                this.solution = [];
+                this.difficulty = 'easy';
+                this.startTime = null;
+                this.hintsUsed = 0;
+                this.gameActive = false;
+                this.timer = null;
+                
+                this.difficulties = {
+                    easy: 40,
+                    medium: 50,
+                    hard: 60
+                };
+                
+                this.aiMessages = [
+                    "Analyzing neural pathways... 🧠",
+                    "Quantum computing the possibilities... ⚛️",
+                    "Processing logical matrices... 💫",
+                    "Scanning for optimal solutions... 🔍",
+                    "Excellent deduction, human! 🎯",
+                    "Your logic circuits are impressive! ⚡",
+                    "Fascinating pattern recognition! 🌟",
+                    "Outstanding computational thinking! 🚀"
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.createStars();
+                this.setupEventListeners();
+                this.generateNewGame();
+            }
+            
+            createStars() {
+                const starsContainer = document.getElementById('stars');
+                for (let i = 0; i < 100; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 100 + '%';
+                    star.style.width = Math.random() * 3 + 1 + 'px';
+                    star.style.height = star.style.width;
+                    star.style.animationDelay = Math.random() * 2 + 's';
+                    starsContainer.appendChild(star);
+                }
+            }
+            
+            setupEventListeners() {
+                document.getElementById('new-game').addEventListener('click', () => this.generateNewGame());
+                document.getElementById('hint-btn').addEventListener('click', () => this.giveHint());
+                document.getElementById('solve-btn').addEventListener('click', () => this.autoSolve());
+                
+                document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.setDifficulty(e.target.dataset.difficulty));
+                });
+            }
+            
+            setDifficulty(diff) {
+                this.difficulty = diff;
+                document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-difficulty="${diff}"]`).classList.add('active');
+                this.generateNewGame();
+            }
+            
+            generateBoard() {
+                // Create empty 9x9 board
+                this.board = Array(9).fill().map(() => Array(9).fill(0));
+                this.solution = Array(9).fill().map(() => Array(9).fill(0));
+                
+                // Fill board with valid solution
+                this.solveSudoku(this.solution);
+                
+                // Copy solution to board
+                for (let i = 0; i < 9; i++) {
+                    for (let j = 0; j < 9; j++) {
+                        this.board[i][j] = this.solution[i][j];
+                    }
+                }
+                
+                // Remove numbers based on difficulty
+                this.removeNumbers();
+            }
+            
+            solveSudoku(grid) {
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        if (grid[row][col] === 0) {
+                            const numbers = this.shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+                            for (let num of numbers) {
+                                if (this.isValidMove(grid, row, col, num)) {
+                                    grid[row][col] = num;
+                                    if (this.solveSudoku(grid)) {
+                                        return true;
+                                    }
+                                    grid[row][col] = 0;
+                                }
+                            }
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            
+            isValidMove(grid, row, col, num) {
+                // Check row
+                for (let x = 0; x < 9; x++) {
+                    if (grid[row][x] === num) return false;
+                }
+                
+                // Check column
+                for (let x = 0; x < 9; x++) {
+                    if (grid[x][col] === num) return false;
+                }
+                
+                // Check 3x3 box
+                const startRow = row - row % 3;
+                const startCol = col - col % 3;
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        if (grid[i + startRow][j + startCol] === num) return false;
+                    }
+                }
+                
+                return true;
+            }
+            
+            removeNumbers() {
+                const cellsToRemove = this.difficulties[this.difficulty];
+                let removed = 0;
+                
+                while (removed < cellsToRemove) {
+                    const row = Math.floor(Math.random() * 9);
+                    const col = Math.floor(Math.random() * 9);
+                    
+                    if (this.board[row][col] !== 0) {
+                        this.board[row][col] = 0;
+                        removed++;
+                    }
+                }
+            }
+            
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+            
+            renderBoard() {
+                const boardElement = document.getElementById('board');
+                boardElement.innerHTML = '';
+                
+                for (let i = 0; i < 9; i++) {
+                    for (let j = 0; j < 9; j++) {
+                        const cell = document.createElement('input');
+                        cell.type = 'text';
+                        cell.className = 'cell';
+                        cell.maxLength = 1;
+                        cell.dataset.row = i;
+                        cell.dataset.col = j;
+                        
+                        if (this.board[i][j] !== 0) {
+                            cell.value = this.board[i][j];
+                            cell.classList.add('given');
+                        }
+                        
+                        cell.addEventListener('input', (e) => this.handleInput(e));
+                        boardElement.appendChild(cell);
+                    }
+                }
+            }
+            
+            handleInput(e) {
+                const value = e.target.value;
+                const row = parseInt(e.target.dataset.row);
+                const col = parseInt(e.target.dataset.col);
+                
+                // Only allow numbers 1-9
+                if (!/^[1-9]$/.test(value)) {
+                    e.target.value = '';
+                    return;
+                }
+                
+                const num = parseInt(value);
+                
+                // Remove previous styling
+                e.target.classList.remove('correct', 'incorrect');
+                
+                // Check if move is valid
+                if (num === this.solution[row][col]) {
+                    e.target.classList.add('correct');
+                    this.playSuccessEffect();
+                    this.updateAIMessage(this.getRandomMessage());
+                } else {
+                    e.target.classList.add('incorrect');
+                    this.playErrorEffect();
+                    this.updateAIMessage("Hmm, that doesn't compute. Try again! 🤔");
+                }
+                
+                // Check if puzzle is complete
+                setTimeout(() => this.checkWin(), 100);
+            }
+            
+            playSuccessEffect() {
+                // Visual success feedback
+                document.body.style.animation = 'none';
+                setTimeout(() => {
+                    document.body.style.animation = 'glowPulse 0.3s ease';
+                }, 10);
+            }
+            
+            playErrorEffect() {
+                // Visual error feedback
+                document.querySelector('.sudoku-board').style.animation = 'shake 0.3s ease';
+                setTimeout(() => {
+                    document.querySelector('.sudoku-board').style.animation = 'boardGlow 4s ease-in-out infinite alternate';
+                }, 300);
+            }
+            
+            checkWin() {
+                const cells = document.querySelectorAll('.cell');
+                let complete = true;
+                
+                cells.forEach(cell => {
+                    if (!cell.value || cell.classList.contains('incorrect')) {
+                        complete = false;
+                    }
+                });
+                
+                if (complete) {
+                    this.gameActive = false;
+                    clearInterval(this.timer);
+                    this.updateAIMessage("🎉 VICTORY ACHIEVED! Your neural networks are impressive, human! 🏆");
+                    this.celebrateWin();
+                }
+            }
+            
+            celebrateWin() {
+                // Add celebration animation
+                const cells = document.querySelectorAll('.cell');
+                cells.forEach((cell, index) => {
+                    setTimeout(() => {
+                        cell.style.animation = 'correctPulse 0.5s ease';
+                    }, index * 20);
+                });
+            }
+            
+            giveHint() {
+                const emptyCells = [];
+                const cells = document.querySelectorAll('.cell:not(.given)');
+                
+                cells.forEach(cell => {
+                    if (!cell.value || cell.classList.contains('incorrect')) {
+                        emptyCells.push(cell);
+                    }
+                });
+                
+                if (emptyCells.length === 0) return;
+                
+                const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                const row = parseInt(randomCell.dataset.row);
+                const col = parseInt(randomCell.dataset.col);
+                
+                randomCell.classList.add('hint');
+                randomCell.value = this.solution[row][col];
+                
+                setTimeout(() => {
+                    randomCell.classList.remove('hint');
+                    randomCell.classList.add('correct');
+                }, 1000);
+                
+                this.hintsUsed++;
+                document.getElementById('hints').textContent = this.hintsUsed;
+                this.updateAIMessage("Quantum hint processed! Use it wisely. ⚡");
+            }
+            
+            autoSolve() {
+                if (!confirm('Are you sure you want me to solve the entire puzzle?')) return;
+                
+                const cells = document.querySelectorAll('.cell');
+                cells.forEach(cell => {
+                    const row = parseInt(cell.dataset.row);
+                    const col = parseInt(cell.dataset.col);
+                    
+                    if (!cell.classList.contains('given')) {
+                        setTimeout(() => {
+                            cell.value = this.solution[row][col];
+                            cell.classList.add('correct');
+                        }, Math.random() * 2000);
+                    }
+                });
+                
+                this.updateAIMessage("Auto-solve initiated! Watch the AI magic unfold! 🎭");
+                this.gameActive = false;
+                clearInterval(this.timer);
+            }
+            
+            generateNewGame() {
+                this.generateBoard();
+                this.renderBoard();
+                this.startTimer();
+                this.hintsUsed = 0;
+                document.getElementById('hints').textContent = '0';
+                this.updateAIMessage("New quantum puzzle generated! Ready to challenge your logic circuits? 🧩");
+            }
+            
+            startTimer() {
+                this.startTime = Date.now();
+                this.gameActive = true;
+                
+                this.timer = setInterval(() => {
+                    if (!this.gameActive) return;
+                    
+                    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    document.getElementById('time').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+            
+            updateAIMessage(message) {
+                const messageEl = document.getElementById('ai-message');
+                messageEl.style.opacity = '0';
+                setTimeout(() => {
+                    messageEl.textContent = message;
+                    messageEl.style.opacity = '1';
+                }, 200);
+            }
+            
+            getRandomMessage() {
+                return this.aiMessages[Math.floor(Math.random() * this.aiMessages.length)];
+            }
+        }
+        
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new FuturisticSudoku();
+        });
+    </script>
+</body>
+</html>
