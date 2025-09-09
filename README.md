@@ -18,7 +18,7 @@ This project reimagines the classic 9×9 puzzle with smooth animations, modern d
 
 ## 🎮 Demo  
 
-👉 [Play the Game](#) *(Add your GitHub Pages or live demo link here)*  
+👉 [Play the Game](#) *https://vrbeirer.github.io/AI_Sudoku_Game/*  
 
 ---
 
